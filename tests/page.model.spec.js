@@ -8,8 +8,7 @@ chai.use(require('chai-things'));
 
 describe('Page model', function () {
 
-  let page1, page3, testTag;
-  let page2;
+  let page1, page3, testTag, page2, page4, error1, error2, error3, hookPage;
 
     beforeEach(function(done){
         Page.sync({force:true})
@@ -42,12 +41,22 @@ describe('Page model', function () {
           tags: ['test', 'fullstack', 'isCool']
         });
 
-        Promise.all([page1, page2, page3])
+        page4 = Page.create({
+          title: 'Test4',
+          content: 'This is the 4th test!',
+          status: 'open',
+          tags: ['isCool', 'almost done', 'this is cray']
+        });
+
+        Promise.all([page1, page2, page3, page4])
         .then(function(pageCreated) {
           page1 = pageCreated[0];
           page2 = pageCreated[1];
           page3 = pageCreated[2];
-          console.log('thes are pages created', pageCreated);
+          page4 = pageCreated[3];
+          // error1 = pageCreated[4];
+          // error2 = pageCreated[5];
+          // error3 = pageCreated[6];
           done();
         }).catch(done);
 
@@ -103,19 +112,89 @@ describe('Page model', function () {
         }).catch(done);
       });
 
-      it('gets other pages with any common tags');
-      it('does not get other pages without any common tags');
+      it('gets other pages with any common tags', function(done){
+        page3.findSimilar()
+        .then(function(pageCreated){
+          expect(pageCreated).to.have.lengthOf(2);
+          done();
+        }).catch(done);
+      });
+
+      it('does not get other pages without any common tags', function(done){
+        page2.findSimilar()
+        .then(function(pageCreated){
+          expect(pageCreated).to.have.lengthOf(0);
+          done();
+        }).catch(done);
+      });
+
     });
 
   });
 
   describe('Validations', function () {
-    it('errors without title');
-    it('errors without content');
+
+        error1 = Page.build({
+          title: null,
+          content: 'This is the first error, no title',
+          status: 'open',
+          tags: ['error1']
+        });
+
+        error2 = Page.build({
+          title: 'Error2',
+          urlTitle: 'Error2',
+          content: null,
+          status: 'open',
+          tags: ['error2']
+        });
+
+        error3 = Page.build({
+          title: 'Error3',
+          urlTitle: 'Error3',
+          content: 'This is the third error, invalid status',
+          status: 'hello',
+          tags: ['error3']
+        });
+
+    it('errors without title', function(done){
+      error1.validate()
+      .then(function(err){
+        expect(err).to.exist;
+        expect(err.errors).to.exist;
+        expect(err.errors[0].path).to.equal('title');
+        done();
+      }).catch(done);
+
+    });
+    it('errors without content', function(done){
+      error2.validate()
+      .then(function(err){
+        expect(err).to.exist;
+        expect(err.errors).to.exist;
+        expect(err.errors[0].path).to.equal('content');
+        done();
+      }).catch(done);
+    });
     it('errors given an invalid status');
+       // , function(done){
+      // error3.validate()
+      // .then(function(err){
+      //   expect(err).to.exist;
+      //   expect(err.errors).to.exist;
+      //   expect(err.errors[0].path).to.equal('status');
+      //   done();
+      // }).catch(done);
+    // });
   });
 
   describe('Hooks', function () {
+        hookPage = Page.build({
+          title: 'Hook Page',
+          content: 'This is the hookPage',
+          status: 'open',
+          tags: ['hookpage']
+        });
     it('it sets urlTitle based on title before validating');
   });
 
