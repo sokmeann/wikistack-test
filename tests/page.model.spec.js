@@ -8,7 +8,8 @@ chai.use(require('chai-things'));
 
 describe('Page model', function () {
 
-  let page1, page2, page, testTag;
+  let page1, page3, testTag;
+  let page2;
 
     beforeEach(function(done){
         Page.sync({force:true})
@@ -19,37 +20,37 @@ describe('Page model', function () {
       });
 
       beforeEach(function(done){
-        Page.create({
+        page1 = Page.create({
           title: 'Hello Today is Tuesday',
           content: 'This is a test!',
           status: 'open',
           tags: ['test', 'fullstack', 'isAwesome', 'NYC']
-        }).then(function(pageCreated){
-          page1 = pageCreated;
-          done();
-        }).catch(done);
+        });
 
-        Page.create({
+        page2 = Page.create({
           title: 'Test 2++',
           urlTitle: 'Test_2',
           content: 'This is a test!',
           status: 'open',
           tags: ['not shared']
-        }).then(function(pageCreated){
-          page2 = pageCreated;
-          done();
-        })
-        .catch(done);
+        });
 
-        //  Page.create({
-        //   title: 'Test3',
-        //   content: 'This is the 3rd test!',
-        //   status: 'open',
-        //   tags: ['test', 'fullstack', 'isCool', 'NYC']
-        // }).then(function(pageCreated){
-        //   page3 = pageCreated;
-        //   done();
-        // }).catch(done);
+        page3 = Page.create({
+          title: 'Test3',
+          content: 'This is the 3rd test!',
+          status: 'open',
+          tags: ['test', 'fullstack', 'isCool']
+        });
+
+        Promise.all([page1, page2, page3])
+        .then(function(pageCreated) {
+          page1 = pageCreated[0];
+          page2 = pageCreated[1];
+          page3 = pageCreated[2];
+          console.log('thes are pages created', pageCreated);
+          done();
+        }).catch(done);
+
       });
 
       beforeEach(function(done) {
